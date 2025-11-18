@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired; //haha beans (I'll get to autowired in a second)
 
 import com.estoquenick.repository.ProductRepo;
+import com.estoquenick.repository.CategoryRepo;
 import com.estoquenick.model.Product;
 
 import java.util.List;
@@ -18,6 +19,9 @@ public class ProductService {
     @Autowired 
     private ProductRepo productRepository;
 
+    @Autowired
+    private CategoryRepo categoryRepository;
+
     public List<Product> findAll() {
         return productRepository.findAll(); //note this returns a list i think
     }
@@ -28,6 +32,28 @@ public class ProductService {
     }
 
     public Product save(Product product) {
+        //here are all the failsafes being put in place
+        
+        //needs a name:
+        if (product.getName() == null || product.getName().isBlank()) {
+            throw new RuntimeException("Product needs a name");
+        }
+        //price has to be at least more than nothing lol
+        if (product.getPrice() <= 0 || product.getPrice() == null) {
+            throw new RuntimeException("Price can't be zero or negative");
+        }
+        //stock can't be negative
+        if (product.getCurrentStock() == null || product.getCurrentStock() < 0) {
+            throw new RuntimeException("Stock can't be negative");
+        }
+        //category must be inserted
+        if (product.getCategory() == null || product.getCategory().getId() == null) {
+            throw new RuntimeException("Valid category required");
+        }
+        //category inserted must actually exist lmao, we're checking the databank for this one
+        categoryRepository.findById(product.getCategory().getId()) //check find the id of the current category
+            .orElseThrow(() -> new RuntimeException("Category does not exist"));
+
         return productRepository.save(product); //returns the saved object? this deals with both Inserting AND Updating so that's pretty darn cool
     }
 

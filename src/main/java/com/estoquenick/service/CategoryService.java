@@ -21,10 +21,14 @@ public class CategoryService {
 
     public Category findById(Long id) {
         return categoryRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Categoria não encontrada"));
+            .orElseThrow(() -> new RuntimeException("Category not found"));
     }
 
     public Category save(Category category) {
+        //failsafe, category needs a name lol
+        if (category.getName() == null || category.getName().isBlank()) {
+            throw new RuntimeException("Category name is required");
+        }
         return categoryRepository.save(category);
     }
 
