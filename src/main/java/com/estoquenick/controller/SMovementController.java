@@ -25,7 +25,7 @@ public class SMovementController {
 
     // Entry
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("/entrada")
+    @PostMapping("/entry")
     public StockMovement registerEntry(@RequestBody StockMovement movement) {
         // saves directly for NOW, we'll change this up soon I think
         return movementService.registerEntry(movement);
@@ -33,7 +33,7 @@ public class SMovementController {
 
     // Exit
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("/saida")
+    @PostMapping("/exit")
     public StockMovement registerExit(@RequestBody StockMovement movement) {
         // marks type as exit and validates something im not sure
         return movementService.registerExit(movement);
