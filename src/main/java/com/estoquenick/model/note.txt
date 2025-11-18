@@ -1,0 +1,3 @@
+Originally there used to be "/entity" and "/enum" folders in here.
+But apparently java or vscode didn't like it when I named a folder `enum` so it ended up not working out, a shame...
+Guess we'll just have to shovel everything onto the same folder, huh?
