@@ -2,37 +2,62 @@ package com.estoquenick.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.estoquenick.repository.CategoryRepo;
 import com.estoquenick.model.Category;
+import com.estoquenick.dto.CategoryRequest;
+import com.estoquenick.dto.CategoryResponse;
 
 import java.util.List;
 
-//check productserv for info
+//check productserv for info, it's really similar to this
 @Service
 public class CategoryService {
 
     @Autowired
     private CategoryRepo categoryRepository;
 
-    public List<Category> findAll() {
-        return categoryRepository.findAll();
+    public List<CategoryResponse> findAll() {
+        return categoryRepository.findAll()
+            .stream()
+            .map(this::toResponse)
+            .toList();
     }
 
-    public Category findById(Long id) {
-        return categoryRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Category not found"));
+    public CategoryResponse findById(Long id) {
+        Category category = categoryRepository.findById(id) //finds the category by its id
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found"));
+        
+        return toResponse(category); //returns that in dto form
     }
 
-    public Category save(Category category) {
-        //failsafe, category needs a name lol
-        if (category.getName() == null || category.getName().isBlank()) {
-            throw new RuntimeException("Category name is required");
-        }
-        return categoryRepository.save(category);
+    public CategoryResponse save(CategoryRequest dto) {
+        Category category = new Category(); //new category object
+        category.setName(dto.name()); //set its name to the name we got from the dto argument
+        return toResponse(category); //return the category we just created, in dto form
+    }
+
+    //nearly the same deal as save
+    public CategoryResponse update(Long id, CategoryRequest dto) {
+        Category category = categoryRepository.findById(id)
+            .orElseThrow(() ->new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found"));
+
+        category.setName(dto.name());
+        categoryRepository.save(category); //make sure to save it over the one we had before
+        return toResponse(category);
     }
 
     public void delete(Long id) {
         categoryRepository.deleteById(id);
+    }
+
+    //transforms into dto
+    private CategoryResponse toResponse(Category c) {
+        return new CategoryResponse(
+            c.getId(),
+            c.getName()
+        );
     }
 }
