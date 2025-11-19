@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.estoquenick.dto.SMovementRequest;
+import com.estoquenick.dto.SMovementResponse;
 import com.estoquenick.model.StockMovement;
 import com.estoquenick.model.Product;
 import com.estoquenick.model.MovementType;
@@ -12,10 +14,11 @@ import com.estoquenick.repository.ProductRepo;
 import com.estoquenick.repository.SMovementRepo;
 
 import java.time.LocalDateTime;
+// import java.time.LocalDateTime; //not needed anymore as we're using dto
 import java.util.List;
 
 //apparently this one is a little different than the others in a way, i'll see how it goes
-//also check productserv for more info
+//still, check productserv for more info
 @Service
 public class SMovementService {
 
@@ -26,72 +29,80 @@ public class SMovementService {
     private ProductRepo productRepository;
 
     //easy find everything lol
-    public List<StockMovement> findAll() {
-        return stockMovementRepository.findAll();
+    public List<SMovementResponse> findAll() {
+        return stockMovementRepository.findAll()
+            .stream()
+            .map(this::toResponse)
+            .toList();
     }
 
-    public StockMovement findById(Long id) {
-        return stockMovementRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Movement not found"));
+    public SMovementResponse findById(Long id) {
+        StockMovement movement = stockMovementRepository.findById(id) //find movement via its id
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Movement not found"));
+
+        return toResponse(movement); //return in dto form
     }
 
     // stock entry
-    public StockMovement registerEntry(StockMovement movement) {
+    public SMovementResponse registerEntry(SMovementRequest req) {
+        Product product = getProductOrThrow(req.productId()); 
 
-        //doesnt allow trying to add nothing, or less than nothing
-        if (movement.getQuantity() <= 0 || movement.getQuantity() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quantity must be above 0");
-        }
+        //section that updates its own stock
+        product.setCurrentStock(product.getCurrentStock() + req.quantity()); //current stock will alwyas be 0 on register, but it's nice to have failsafes anyway
+        productRepository.save(product); //save, ofc
 
-        //get the product it's looking for, and check if it actually exists
-        Product product = getProductOrThrow(movement);
-
+        //now we gotta save the movement itself:
+        StockMovement movement = new StockMovement();
         movement.setType(MovementType.ENTRY);
-        movement.setDateAndTime(LocalDateTime.now()); //make sure it's got the proper one lol
+        movement.setQuantity(req.quantity());
+        movement.setProduct(product); //gotta set the product itself too lol   
 
-        //update current stock, add in however much was added by the request
-        product.setCurrentStock(product.getCurrentStock() + movement.getQuantity());
-        productRepository.save(product);
+        stockMovementRepository.save(movement); //save the movement that just happened
 
-        movement.setProduct(product); //make SURE it's returning the FULL product, and not just an id
-        return stockMovementRepository.save(movement);
+        return toResponse(movement); //return said movement as a dto
     }
 
     // stock exit, make sure there's at least something in stock
-    public StockMovement registerExit(StockMovement movement) {
+    // apologies for the comments being more monotone down here, i already commeted stuff up on registerEntry lol
+    public SMovementResponse registerExit(SMovementRequest req) {
+        Product product = getProductOrThrow(req.productId());
 
-        //doesn't allow trying to take out nothing, or negative amounts of something
-        if (movement.getQuantity() <= 0 || movement.getQuantity() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quantity must be above 0");
+        if (product.getCurrentStock() < req.quantity()) { //if it's trying to take more than we have, then:
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not enough stock for exit");
         }
 
-        Product product = getProductOrThrow(movement);
-
-        //if it's attempting to take out more than what we have in stock, throw an error
-        if (product.getCurrentStock() < movement.getQuantity()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Attempting to take out more than what's available in stock");
-        }
-
-        movement.setType(MovementType.EXIT);
-        movement.setDateAndTime(LocalDateTime.now());
-
-        //take out however much was requested of the current stock for the chosen product
-        product.setCurrentStock(product.getCurrentStock() - movement.getQuantity());
+        // stock exit
+        product.setCurrentStock(product.getCurrentStock() - req.quantity());
         productRepository.save(product);
 
+        // save movement
+        StockMovement movement = new StockMovement();
+        movement.setType(MovementType.EXIT);
+        movement.setQuantity(req.quantity());
         movement.setProduct(product);
-        return stockMovementRepository.save(movement);
+
+        stockMovementRepository.save(movement);
+
+        return toResponse(movement);
     }
+    //helpers down here ↓
 
     // extra method to check if the product actually exists
-    private Product getProductOrThrow(StockMovement movement) {
-        if (movement.getProduct() == null || movement.getProduct().getId() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Movement must contain product.id");
-        }
+    private Product getProductOrThrow(Long id) {
+        return productRepository.findById(id) //return the product found using its id, if it actually finds anything
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+    }
 
-        //return the product that was found (if it was found), otherwise throw an error
-        return productRepository.findById(movement.getProduct().getId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+    //converts into dto
+    private SMovementResponse toResponse(StockMovement m) {
+        return new SMovementResponse(
+                m.getId(),
+                m.getType(),
+                m.getQuantity(),
+                m.getDateAndTime(),
+                m.getProduct().getId(),
+                m.getProduct().getName()
+        );
     }
 
     public void delete(Long id) {

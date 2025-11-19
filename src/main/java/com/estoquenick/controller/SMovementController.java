@@ -1,7 +1,11 @@
 package com.estoquenick.controller;
 
-import com.estoquenick.model.StockMovement;
 import com.estoquenick.service.SMovementService;
+import com.estoquenick.dto.SMovementRequest;
+import com.estoquenick.dto.SMovementResponse;
+
+import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -19,28 +23,28 @@ public class SMovementController {
     private SMovementService movementService;
 
     @GetMapping
-    public List<StockMovement> findAll() {
+    public List<SMovementResponse> findAll() {
         return movementService.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public SMovementResponse findById(@PathVariable Long id) {
+        return movementService.findById(id);
     }
 
     // Entry
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/entry")
-    public StockMovement registerEntry(@RequestBody StockMovement movement) {
+    public SMovementResponse registerEntry(@RequestBody @Valid SMovementRequest req) {
         // saves directly for NOW, we'll change this up soon I think
-        return movementService.registerEntry(movement);
+        return movementService.registerEntry(req);
     }
 
     // Exit
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/exit")
-    public StockMovement registerExit(@RequestBody StockMovement movement) {
+    public SMovementResponse registerExit(@RequestBody SMovementRequest req) {
         // marks type as exit and validates something im not sure
-        return movementService.registerExit(movement);
-    }
-
-    @GetMapping("/{id}")
-    public StockMovement findById(@PathVariable Long id) {
-        return movementService.findById(id);
+        return movementService.registerExit(req);
     }
 }
