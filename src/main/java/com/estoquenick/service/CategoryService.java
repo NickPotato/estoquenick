@@ -36,6 +36,7 @@ public class CategoryService {
     public CategoryResponse save(CategoryRequest dto) {
         Category category = new Category(); //new category object
         category.setName(dto.name()); //set its name to the name we got from the dto argument
+        categoryRepository.save(category); //(i'd forgotten to actually save it into the repository...)
         return toResponse(category); //return the category we just created, in dto form
     }
 

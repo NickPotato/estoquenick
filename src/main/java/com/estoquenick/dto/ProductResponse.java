@@ -1,7 +1,8 @@
 package com.estoquenick.dto;
 
 //This is what we'll use to send the report back to our client (postman in this case, but the front-end application later on)
-public record ProductResponse (
+
+public record ProductResponse(
     Long id,
     String name,
     Double price,

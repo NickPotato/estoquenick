@@ -13,7 +13,6 @@ import com.estoquenick.model.MovementType;
 import com.estoquenick.repository.ProductRepo;
 import com.estoquenick.repository.SMovementRepo;
 
-import java.time.LocalDateTime;
 // import java.time.LocalDateTime; //not needed anymore as we're using dto
 import java.util.List;
 
