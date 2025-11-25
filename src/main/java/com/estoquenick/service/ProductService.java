@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 
 import com.estoquenick.dto.PriceListResponse;
 import com.estoquenick.dto.LowStockResponse;
+import com.estoquenick.dto.BalanceReportResponse;
+import com.estoquenick.dto.BalanceReportItemResponse;
 
 import com.estoquenick.dto.ProductRequest;
 import com.estoquenick.dto.ProductResponse;
@@ -193,7 +195,7 @@ public class ProductService {
     //this is for the low stock reports, shows which products have currentStock below minStock
     public List<LowStockResponse> getLowStockReport() {
         //spring data can't logic this by themselves so we're here to help :D
-        return productRepository.findAll() //get every product we have
+        return productRepository.findAllByOrderByNameAsc() //get every product we have
             .stream()
             .filter(p -> p.getCurrentStock() < p.getMinStock()) //only new p objects are the ones that are low (trippy ik)
             .map(p -> new LowStockResponse(
@@ -205,8 +207,26 @@ public class ProductService {
             //yknow I'd also add in the category name here but that wasn't requested and I'm already low on time, so...
     }
 
-    //----end of report functions
+    public BalanceReportResponse getBalanceReport() {
+        List<BalanceReportItemResponse> items = productRepository.findAllByOrderByNameAsc() //get a list of all
+            .stream()
+            .map(p -> new BalanceReportItemResponse(
+                p.getName(),
+                p.getCurrentStock(),
+                p.getPrice(),
+                p.getCurrentStock() * p.getPrice() //this is for the total value of that amount of items
+            ))
+            .toList(); //yaknow the drill
 
+        double totalValue = items.stream() //this is for our entire catalogue
+            .mapToDouble(BalanceReportItemResponse::totalValue) //it's ALREADY a double, but I'm putting this here in case I change pricing to bigDecimal l8r
+            .sum(); //basically, get every item in that list, sum everything together, that's totalValue
+
+        //returns the list of each item and its properties, including individual total values for each product, and the total value of our catalogue
+        return new BalanceReportResponse(items, totalValue);
+    }
+
+    //----end of report functions
 
     //this converts entities into dto format!! this is also the ONLY helper function in this class!!! :D (whoops)
     private ProductResponse toResponse(Product p) {

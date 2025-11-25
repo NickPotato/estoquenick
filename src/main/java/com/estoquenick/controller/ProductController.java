@@ -8,6 +8,7 @@ import com.estoquenick.dto.PriceMassAdjustmentRequest;
 
 import com.estoquenick.dto.PriceListResponse;
 import com.estoquenick.dto.LowStockResponse;
+import com.estoquenick.dto.BalanceReportResponse;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,11 @@ public class ProductController {
     @GetMapping("/reports/low-stock")
     public List<LowStockResponse> getLowStockReport() {
         return productService.getLowStockReport(); 
+    }
+
+    @GetMapping("/reports/balance")
+    public BalanceReportResponse getBalanceReport() {
+        return productService.getBalanceReport();
     }
     //---- report mappings end here
 
