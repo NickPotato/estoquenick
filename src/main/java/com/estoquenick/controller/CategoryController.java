@@ -30,24 +30,24 @@ public class CategoryController {
         return categoryService.findAll();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id}") //check by id specifically
     public CategoryResponse findById(@PathVariable Long id) {
         return categoryService.findById(id);
     }
 
-    @GetMapping("/{categoryId}/products")
+    @GetMapping("/{categoryId}/products") //list products inside a category
     public List<ProductResponse> findProductsByCategory(@PathVariable Long categoryId) {
         return productService.findByCategoryId(categoryId);
     }
 
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping
+    @PostMapping //add a new one
     public CategoryResponse save(@RequestBody @Valid CategoryRequest dto) {
         return categoryService.save(dto);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id}") //update an existing one
     public CategoryResponse update(@PathVariable Long id, @RequestBody @Valid CategoryRequest dto) {
         return categoryService.update(id, dto);
     }

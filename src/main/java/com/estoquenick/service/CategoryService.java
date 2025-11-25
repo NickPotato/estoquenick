@@ -35,8 +35,12 @@ public class CategoryService {
 
     public CategoryResponse save(CategoryRequest dto) {
         Category category = new Category(); //new category object
-        category.setName(dto.name()); //set its name to the name we got from the dto argument
-        categoryRepository.save(category); //(i'd forgotten to actually save it into the repository...)
+
+        category.setName(dto.name()); //set its properties to the ones we got from the dto argument
+        category.setSize(dto.size());
+        category.setPackageType(dto.packageType());
+
+        categoryRepository.save(category); //(i'd forgotten to actually save it into the repository at first...)
         return toResponse(category); //return the category we just created, in dto form
     }
 
@@ -46,6 +50,9 @@ public class CategoryService {
             .orElseThrow(() ->new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found"));
 
         category.setName(dto.name());
+        category.setSize(dto.size());
+        category.setPackageType(dto.packageType());
+
         categoryRepository.save(category); //make sure to save it over the one we had before
         return toResponse(category);
     }
@@ -58,7 +65,9 @@ public class CategoryService {
     private CategoryResponse toResponse(Category c) {
         return new CategoryResponse(
             c.getId(),
-            c.getName()
+            c.getName(),
+            c.getSize(),
+            c.getPackageType()
         );
     }
 }
