@@ -1,6 +1,7 @@
 package com.estoquenick.controller;
 
 import com.estoquenick.service.ProductService;
+import com.estoquenick.dto.PriceListResponse;
 import com.estoquenick.dto.ProductRequest;
 import com.estoquenick.dto.ProductResponse;
 import com.estoquenick.dto.PriceAdjustmentRequest;
@@ -28,6 +29,11 @@ public class ProductController {
     @GetMapping("/{id}")
     public ProductResponse findById(@PathVariable Long id) { //@PathVariable = /api/products/{id} i believe
         return productService.findById(id); //basically this lets us see a specific product by checking from their id
+    }
+
+    @GetMapping("/reports/price-list")
+    public List<PriceListResponse> getPriceList() {
+        return productService.getPriceList(); //goes get the pricelist from service, nothin too fancy
     }
 
     @ResponseStatus(HttpStatus.CREATED) //changes current http status

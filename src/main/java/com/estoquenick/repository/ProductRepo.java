@@ -9,4 +9,5 @@ import java.util.List;
 
 public interface ProductRepo extends JpaRepository<Product, Long> {
     List<Product> findByCategoryId(Long categoryId);
+    List<Product> findAllByOrderByNameAsc(); //ugly method name, yes, needed for alphabetical ordering though
 }

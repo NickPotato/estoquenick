@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired; //haha beans (I'l
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
+import com.estoquenick.dto.PriceListResponse;
 import com.estoquenick.dto.ProductRequest;
 import com.estoquenick.dto.ProductResponse;
 import com.estoquenick.repository.ProductRepo;
@@ -167,6 +168,19 @@ public class ProductService {
             .stream()
             .map(this::toResponse) 
             .toList(); //yk the drill by now
+    }
+
+    //this is for the price list reports, I'm ngl I barely understood this part myself
+    public List<PriceListResponse> getPriceList() {
+        return productRepository.findAllByOrderByNameAsc() //orders it by alphabetical order
+            .stream() //stream so we can map it
+            .map(product -> new PriceListResponse( //map it, get a new response object and insert its properties
+                product.getName(),
+                product.getPrice(),
+                product.getUnit(),
+                product.getCategory().getName()
+            ))
+            .toList(); //turn it into a list, this is what gets returned
     }
 
     //this converts entities into dto format!!
