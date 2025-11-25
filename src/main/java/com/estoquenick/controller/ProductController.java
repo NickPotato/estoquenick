@@ -3,6 +3,8 @@ package com.estoquenick.controller;
 import com.estoquenick.service.ProductService;
 import com.estoquenick.dto.ProductRequest;
 import com.estoquenick.dto.ProductResponse;
+import com.estoquenick.dto.PriceAdjustmentRequest;
+import com.estoquenick.dto.PriceMassAdjustmentRequest;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +40,20 @@ public class ProductController {
     @PutMapping("/{id}")
     public ProductResponse update(@PathVariable Long id, @RequestBody @Valid ProductRequest dto) {
         return productService.update(id, dto);
+    }
+
+    //adjust the price for a specific item
+    @PutMapping("/{id}/adjust-price")
+    public ProductResponse adjustPrice(@PathVariable Long id, @RequestBody PriceAdjustmentRequest request) {
+        return productService.adjustPrice(id, request.percentage()); 
+        //gets the id, shoots it over to service to handle the pricing change
+    }
+
+    //adjust the price for an entire category (or our entire catalog, go ham)
+    @PutMapping("/adjust-price")
+    public List<ProductResponse> adjustPriceMass(@RequestBody PriceMassAdjustmentRequest request) { //i hate lists
+        return productService.adjustPriceMass(request.percentage(), request.categoryId());
+        //same as normal price adjustment
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)

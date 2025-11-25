@@ -111,6 +111,58 @@ public class ProductService {
         return toResponse(p);
     }
 
+    //this is for updating the price of a SINGLE product
+    public ProductResponse adjustPrice(Long id, double percentage) {
+        Product p = productRepository.findById(id)
+            .orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+
+        double factor = 1 + (percentage / 100.0); //boring math stuff to make it work, but basically:
+        double newPrice = p.getPrice() * factor; //multiply the current price by the factor we have
+
+        p.setPrice(newPrice); //update it
+
+        productRepository.save(p);
+        return toResponse(p); //standard save and return in dto form
+    }
+
+    //same as the previous one but for an entire category instead
+    public List<ProductResponse> adjustPriceMass(double percentage, Long categoryId) { //gotta return a list instead since we're changing a lot
+        List<Product> products;
+        if (categoryId == null) { //if no category is specified, then get ALL OF THEM >:3
+            products = productRepository.findAll(); //lowkey forgot we had this method
+        }
+        else {
+            products = productRepository.findByCategoryId(categoryId);
+        }
+
+        //nick using a for loop for once?? no way (i hate lists)
+        double factor = 1 + (percentage / 100.0);
+        for(Product p : products) { //for each product in products, multiply its current price by our factor
+            p.setPrice(p.getPrice() * factor); 
+        }
+
+        productRepository.saveAll(products);
+
+        //returning a list is always dookey when having this whole dto structure set up...
+        return products.stream()
+            .map(this::toResponse)
+            .toList();
+    }
+
+    public List<ProductResponse> findByCategoryId(Long categoryId) {
+        // check if the category exists
+        categoryRepository.findById(categoryId)
+            .orElseThrow(() -> 
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found"));
+
+        // check its products
+        return productRepository.findByCategoryId(categoryId)
+            .stream()
+            .map(this::toResponse) 
+            .toList(); //yk the drill by now
+    }
+
     //this converts entities into dto format!!
     private ProductResponse toResponse(Product p) {
         return new ProductResponse(
