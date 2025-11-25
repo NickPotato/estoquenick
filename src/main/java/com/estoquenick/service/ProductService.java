@@ -12,6 +12,7 @@ import com.estoquenick.dto.PriceListResponse;
 import com.estoquenick.dto.LowStockResponse;
 import com.estoquenick.dto.BalanceReportResponse;
 import com.estoquenick.dto.BalanceReportItemResponse;
+import com.estoquenick.dto.CategoryProductCountResponse;
 
 import com.estoquenick.dto.ProductRequest;
 import com.estoquenick.dto.ProductResponse;
@@ -224,6 +225,16 @@ public class ProductService {
 
         //returns the list of each item and its properties, including individual total values for each product, and the total value of our catalogue
         return new BalanceReportResponse(items, totalValue);
+    }
+
+    public List<CategoryProductCountResponse> getProductCountByCategory() {
+        return categoryRepository.findAllByOrderByNameAsc()
+            .stream()
+            .map(category -> new CategoryProductCountResponse(
+                category.getName(),
+                productRepository.countByCategoryId(category.getId()) //
+            )) //you know the drill already
+            .toList();
     }
 
     //----end of report functions

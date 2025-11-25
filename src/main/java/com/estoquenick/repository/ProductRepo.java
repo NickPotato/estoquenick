@@ -11,4 +11,5 @@ public interface ProductRepo extends JpaRepository<Product, Long> {
     List<Product> findByCategoryId(Long categoryId);
     List<Product> findAllByOrderByNameAsc(); //ugly method name, yes, needed for alphabetical ordering though
     List<Product> findByCurrentStockLessThan(Integer minStock); //lowkey i didn't even know half of these methods were a thing
+    long countByCategoryId(Long categoryId); //thank u spring <3
 }

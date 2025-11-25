@@ -9,6 +9,7 @@ import com.estoquenick.dto.PriceMassAdjustmentRequest;
 import com.estoquenick.dto.PriceListResponse;
 import com.estoquenick.dto.LowStockResponse;
 import com.estoquenick.dto.BalanceReportResponse;
+import com.estoquenick.dto.CategoryProductCountResponse;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +49,11 @@ public class ProductController {
     @GetMapping("/reports/balance")
     public BalanceReportResponse getBalanceReport() {
         return productService.getBalanceReport();
+    }
+
+    @GetMapping("reports/products-by-category")
+    public List<CategoryProductCountResponse> getProductCountByCategory() {
+        return productService.getProductCountByCategory();
     }
     //---- report mappings end here
 
