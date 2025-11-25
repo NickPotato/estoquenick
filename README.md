@@ -3,4 +3,5 @@
 - todos os comentários são pessoais, javadoc vai vir quando eu acabar tudo
 
 Parte front-end: https://github.com/NickPotato/estoquenick-frontend
+
 Aluno: Nícolas Gaia Negrão: 1072517389 - @NickPotato - email: nickgnegrao@gmail.com
