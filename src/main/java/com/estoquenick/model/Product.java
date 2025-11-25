@@ -1,5 +1,8 @@
 package com.estoquenick.model;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank; //these two weren't originally here but I like making sure
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -17,18 +20,33 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY) 
     private Long id;
 
+    @NotBlank
     @Column(nullable = false) //This one doesn't have to be unique, unlike Category, huh?
     private String name;
 
+    @NotNull
     @Column(nullable = false)
     private Double price; //reminder you'll need a way to change this in bulk later
 
+    @NotNull
     @Column(nullable = false)
     private Integer currentStock; //THIS is the main value that will be altered during the whole process and whatnot
     
     @ManyToOne //so that multiple products can be part of the same category
-    @JoinColumn(name = "category_id") //defining the "FK" (foregin key) column in the database, remember this name for later
+    @JoinColumn(name = "category_id", nullable = false) //defining the "FK" (foregin key) column in the database, remember this name for later
     private Category category; //this feels so wrong, but I'm pretty sure we're assigning each product to a category w/ this
+
+    @NotNull
+    @Column(nullable = false)
+    private Integer minStock;
+
+    @NotNull
+    @Column(nullable = false)
+    private Integer maxStock;
+
+    @NotBlank
+    @Column(nullable = false)
+    private String unit;
 
     /*I think that foreign keys are like "children" to primary keys so that there's no objects pointing to data that doesn't exist, yeah?
     this is called referential integrity, I believe, thanks google! */

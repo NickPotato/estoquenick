@@ -7,5 +7,8 @@ public record ProductResponse(
     String name,
     Double price,
     Integer currentStock,
-    String categoryName //Note that it won't return the entire category, just the name, okie?
+    String categoryName, //Note that it won't return the entire category, just the name, okie?
+    String unit,
+    Integer minStock,
+    Integer maxStock
 ) {} //these types of records are funny, not a single thing in the function bit, huh?

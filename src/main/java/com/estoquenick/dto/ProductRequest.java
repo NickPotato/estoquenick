@@ -9,5 +9,8 @@ public record ProductRequest(
     @NotBlank String name,
     @NotNull @Min(0) Double price, //I feel like the minimum price here should be 1, but we have to account for cents too
     @NotNull @Min(0) Integer currentStock,
-    @NotNull Long categoryId
+    @NotNull Long categoryId,
+    @NotBlank String unit,
+    @NotNull @Min(0) Integer minStock,
+    @NotNull @Min(0) Integer maxStock
 ) {} //this is here because it's instantly opening and closing a function, even if it doesn't look like it lol

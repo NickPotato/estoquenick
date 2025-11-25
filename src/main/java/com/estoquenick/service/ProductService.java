@@ -82,6 +82,9 @@ public class ProductService {
         p.setPrice(dto.price());
         p.setCurrentStock(dto.currentStock());
         p.setCategory(category);
+        p.setUnit(dto.unit());
+        p.setMinStock(dto.minStock());
+        p.setMaxStock(dto.maxStock());
 
         productRepository.save(p); //and then save it
         return toResponse(p); //and return the product we just created
@@ -106,6 +109,9 @@ public class ProductService {
         p.setPrice(dto.price());
         p.setCurrentStock(dto.currentStock());
         p.setCategory(category);
+        p.setUnit(dto.unit());
+        p.setMinStock(dto.minStock());
+        p.setMaxStock(dto.maxStock());
 
         productRepository.save(p); //save and return new product
         return toResponse(p);
@@ -170,7 +176,10 @@ public class ProductService {
                 p.getName(),
                 p.getPrice(),
                 p.getCurrentStock(),
-                p.getCategory() != null ? p.getCategory().getName() : null //if the category exists then gets its name, otherwise do nothing
+                p.getCategory() != null ? p.getCategory().getName() : null, //if the category exists then gets its name, otherwise do nothing
+                p.getUnit(),
+                p.getMinStock(),
+                p.getMaxStock()
         );
     }
 }
