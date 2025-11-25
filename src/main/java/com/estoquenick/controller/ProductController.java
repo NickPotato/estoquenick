@@ -1,11 +1,13 @@
 package com.estoquenick.controller;
 
 import com.estoquenick.service.ProductService;
-import com.estoquenick.dto.PriceListResponse;
 import com.estoquenick.dto.ProductRequest;
 import com.estoquenick.dto.ProductResponse;
 import com.estoquenick.dto.PriceAdjustmentRequest;
 import com.estoquenick.dto.PriceMassAdjustmentRequest;
+
+import com.estoquenick.dto.PriceListResponse;
+import com.estoquenick.dto.LowStockResponse;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,10 +33,17 @@ public class ProductController {
         return productService.findById(id); //basically this lets us see a specific product by checking from their id
     }
 
+    //---- report mappings start here
     @GetMapping("/reports/price-list")
     public List<PriceListResponse> getPriceList() {
         return productService.getPriceList(); //goes get the pricelist from service, nothin too fancy
     }
+
+    @GetMapping("/reports/low-stock")
+    public List<LowStockResponse> getLowStockReport() {
+        return productService.getLowStockReport(); 
+    }
+    //---- report mappings end here
 
     @ResponseStatus(HttpStatus.CREATED) //changes current http status
     @PostMapping

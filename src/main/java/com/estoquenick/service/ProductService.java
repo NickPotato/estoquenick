@@ -1,3 +1,6 @@
+//Fair warning, this Service class is REALLY loaded, and it's where I commented most of my thought process and learning
+//I apologize if it's a hard read lol
+
 package com.estoquenick.service;
 
 import org.springframework.stereotype.Service;
@@ -6,6 +9,8 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
 import com.estoquenick.dto.PriceListResponse;
+import com.estoquenick.dto.LowStockResponse;
+
 import com.estoquenick.dto.ProductRequest;
 import com.estoquenick.dto.ProductResponse;
 import com.estoquenick.repository.ProductRepo;
@@ -170,6 +175,8 @@ public class ProductService {
             .toList(); //yk the drill by now
     }
 
+    //----report functions
+
     //this is for the price list reports, I'm ngl I barely understood this part myself
     public List<PriceListResponse> getPriceList() {
         return productRepository.findAllByOrderByNameAsc() //orders it by alphabetical order
@@ -183,7 +190,25 @@ public class ProductService {
             .toList(); //turn it into a list, this is what gets returned
     }
 
-    //this converts entities into dto format!!
+    //this is for the low stock reports, shows which products have currentStock below minStock
+    public List<LowStockResponse> getLowStockReport() {
+        //spring data can't logic this by themselves so we're here to help :D
+        return productRepository.findAll() //get every product we have
+            .stream()
+            .filter(p -> p.getCurrentStock() < p.getMinStock()) //only new p objects are the ones that are low (trippy ik)
+            .map(p -> new LowStockResponse(
+                p.getName(),
+                p.getCurrentStock(),
+                p.getMinStock()
+            ))
+            .toList(); 
+            //yknow I'd also add in the category name here but that wasn't requested and I'm already low on time, so...
+    }
+
+    //----end of report functions
+
+
+    //this converts entities into dto format!! this is also the ONLY helper function in this class!!! :D (whoops)
     private ProductResponse toResponse(Product p) {
         return new ProductResponse(
                 p.getId(),
