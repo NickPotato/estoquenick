@@ -10,6 +10,7 @@ import com.estoquenick.dto.PriceListResponse;
 import com.estoquenick.dto.LowStockResponse;
 import com.estoquenick.dto.BalanceReportResponse;
 import com.estoquenick.dto.CategoryProductCountResponse;
+import com.estoquenick.dto.TopMovementReportResponse;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,11 @@ public class ProductController {
     @GetMapping("reports/products-by-category")
     public List<CategoryProductCountResponse> getProductCountByCategory() {
         return productService.getProductCountByCategory();
+    }
+
+    @GetMapping("reports/top-movement")
+    public TopMovementReportResponse getTopMovements() {
+        return productService.getTopMovementReport(); //this one's actually insane though
     }
     //---- report mappings end here
 

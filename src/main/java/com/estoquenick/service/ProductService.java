@@ -13,13 +13,23 @@ import com.estoquenick.dto.LowStockResponse;
 import com.estoquenick.dto.BalanceReportResponse;
 import com.estoquenick.dto.BalanceReportItemResponse;
 import com.estoquenick.dto.CategoryProductCountResponse;
+import com.estoquenick.dto.TopMovementReportResponse;
+import com.estoquenick.dto.ProductMovementSummary;
 
 import com.estoquenick.dto.ProductRequest;
 import com.estoquenick.dto.ProductResponse;
 import com.estoquenick.repository.ProductRepo;
 import com.estoquenick.repository.CategoryRepo;
+import com.estoquenick.repository.SMovementRepo;
 import com.estoquenick.model.Product;
 import com.estoquenick.model.Category;
+import com.estoquenick.model.StockMovement;
+import com.estoquenick.model.MovementType;
+
+//these next imports are ALL for the top entry/exit function, lol
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import java.util.List;
 
@@ -35,6 +45,9 @@ public class ProductService {
 
     @Autowired
     private CategoryRepo categoryRepository;
+
+    @Autowired
+    private SMovementRepo stockMovementRepository;
 
     //list everything
     public List<ProductResponse> findAll() {
@@ -251,5 +264,66 @@ public class ProductService {
                 p.getMinStock(),
                 p.getMaxStock()
         );
+    }
+
+    //thank you ai, i didnt figure this one out
+    public TopMovementReportResponse getTopMovementReport() {
+        List<StockMovement> movements = stockMovementRepository.findAll(); //gets all movements (entry/exit)
+
+        // groups by product and type, this one's for entry, sums everything together later
+        // map: (productId, MovementType) -> totalQuantity
+        // trippy, I know, I barely got the hang of it myself...
+        Map<Long, Long> totalEntriesByProduct = movements.stream()
+            .filter(m -> m.getType() == MovementType.ENTRY) //if type is entry
+            .filter(m -> m.getProduct() != null && m.getProduct().getId() != null) //product exists
+            .collect(Collectors.groupingBy(
+                m -> m.getProduct().getId(),
+                Collectors.summingLong(m -> m.getQuantity() == null ? 0L : m.getQuantity()) 
+            ));
+
+        //same but groups by exit type
+        Map<Long, Long> totalExitsByProduct = movements.stream()
+            .filter(m -> m.getType() == MovementType.EXIT)
+            .filter(m -> m.getProduct() != null && m.getProduct().getId() != null)
+            .collect(Collectors.groupingBy(
+                m -> m.getProduct().getId(),
+                Collectors.summingLong(m -> m.getQuantity() == null ? 0L : m.getQuantity())
+            ));
+
+        // helper function to find the productId with the highest value in our map
+        Function<Map<Long, Long>, Long> topKey = map -> map.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
+
+        Long topEntryProductId = topKey.apply(totalEntriesByProduct);
+        Long topExitProductId  = topKey.apply(totalExitsByProduct);
+
+        ProductMovementSummary topEntrySummary = null;
+        ProductMovementSummary topExitSummary  = null;
+
+        if (topEntryProductId != null) {
+            // gets the product and its name if it actually exists
+            productRepository.findById(topEntryProductId).ifPresent(p -> {
+                // "usamos um holder var via array por ficar dentro do lambda, mas vou reescrever sem lambda abaixo para clareza"
+                //what is a lambda-
+            });
+            // "sem lambdas confusas":
+            var entryProduct = productRepository.findById(topEntryProductId).orElse(null);
+            if (entryProduct != null) {
+                long total = totalEntriesByProduct.getOrDefault(topEntryProductId, 0L);
+                topEntrySummary = new ProductMovementSummary(entryProduct.getId(), entryProduct.getName(), total);
+            }
+        }
+
+        if (topExitProductId != null) {
+            var exitProduct = productRepository.findById(topExitProductId).orElse(null);
+            if (exitProduct != null) {
+                long total = totalExitsByProduct.getOrDefault(topExitProductId, 0L);
+                topExitSummary = new ProductMovementSummary(exitProduct.getId(), exitProduct.getName(), total);
+            }
+        }
+
+        return new TopMovementReportResponse(topEntrySummary, topExitSummary);
     }
 }
